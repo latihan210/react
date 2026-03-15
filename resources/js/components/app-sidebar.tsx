@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, HomeIcon, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, HomeIcon, UserPlus, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -15,6 +15,8 @@ import {
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { dashboard } from '@/routes';
+import { index as usersIndex } from '@/routes/users';
+import { register } from '@/routes';
 
 const mainNavItems: NavItem[] = [
     {
@@ -22,6 +24,17 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: HomeIcon,
     },
+    {
+        header: 'Management',
+        title: 'Semua Member',
+        href: usersIndex().url,
+        icon: Users,
+    },
+    {
+        title: 'Tambah Member',
+        href: register(),
+        icon: UserPlus,
+    }
 ];
 
 const footerNavItems: NavItem[] = [
