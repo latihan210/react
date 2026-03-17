@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,6 +66,7 @@ class UsersController extends Controller
     public function store(Request $request, CreateNewUser $creator)
     {
         $this->authorize('register-users');
+        $this->assignRole('member');
 
         $input = $request->all();
         $creator->create($input);
@@ -99,8 +101,13 @@ class UsersController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        // Laravel akan mengecek UserPolicy@delete
+        $this->authorize('delete', $user);
+
+        $user->delete();
+
+        return redirect('/')->with('success', 'Akun berhasil dihapus');
     }
 }
