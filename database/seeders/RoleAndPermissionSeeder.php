@@ -14,15 +14,16 @@ class RoleAndPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        Permission::create(['name' => 'manage users']); // Admin bisa lihat/tambah user
-        Permission::create(['name' => 'delete account']); // Member bisa hapus akun sendiri
+        // Permission
+        $p1 = Permission::firstOrCreate(['name' => 'manage users']);
+        $p2 = Permission::firstOrCreate(['name' => 'delete account']);
 
-        // 2. Buat Role Admin
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo('manage users');
+        // Role Admin
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->givePermissionTo($p1);
 
-        // 3. Buat Role Member
-        $member = Role::create(['name' => 'member']);
-        $member->givePermissionTo('delete account');
+        // Role Member
+        $member = Role::firstOrCreate(['name' => 'member']);
+        $member->givePermissionTo($p2);
     }
 }

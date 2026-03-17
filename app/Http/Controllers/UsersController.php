@@ -6,6 +6,7 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 
 class UsersController extends Controller
@@ -15,7 +16,10 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('username', '!=', 'masteradmin');
+        $query = User::with('roles')
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'admin');
+            });
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -26,11 +30,16 @@ class UsersController extends Controller
         if ($request->filled('email')) {
             $query->where('email', 'like', '%' . $request->email . '%');
         }
+        if ($request->filled('roles')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->roles . '%');
+            });
+        }
 
         $sort = $request->input('sort', 'name');
         $direction = $request->input('direction', 'asc');
 
-        if (!in_array($sort, ['name', 'username', 'email'])) {
+        if (!in_array($sort, ['name', 'username', 'email', 'roles', 'created_at', 'updated_at'])) {
             $sort = 'name';
         }
         if (!in_array($direction, ['asc', 'desc'])) {
@@ -41,11 +50,21 @@ class UsersController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $users->through(fn($user) => [
+            'id'         => $user->id,
+            'name'       => $user->name,
+            'username'   => $user->username,
+            'email'      => $user->email,
+            'roles'      => $user->getRoleNames()->join(', '), // Ubah array jadi string "member, editor"
+            'created_at' => $user->created_at->format('Y-m-d H:i'),
+            'updated_at' => $user->updated_at->format('Y-m-d H:i'),
+        ]);
+
         return Inertia::render(
             'users/index',
             [
                 'users'  => $users,
-                'filter' => $request->only(['name', 'username', 'email', 'sort', 'direction']),
+                'filter' => $request->only(['name', 'username', 'email', 'roles', 'created_at', 'updated_at', 'sort', 'direction']),
             ]
         );
     }
@@ -66,10 +85,11 @@ class UsersController extends Controller
     public function store(Request $request, CreateNewUser $creator)
     {
         $this->authorize('register-users');
-        $this->assignRole('member');
 
-        $input = $request->all();
-        $creator->create($input);
+        DB::transaction(function () use ($request, $creator) {
+            $user = $creator->create($request->all());
+            $user->assignRole('member');
+        });
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
