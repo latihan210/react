@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, HomeIcon, UserPlus, Users } from 'lucide-react';
+import { BookOpen, Folder, HomeIcon, UserPlus, Users, Settings } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -34,7 +34,13 @@ const mainNavItems: NavItem[] = [
         title: 'Tambah Member',
         href: register(),
         icon: UserPlus,
-    }
+    },
+    {
+        header: 'Master Settings',
+        title: 'Data Perusahaan',
+        href: '#',
+        icon: Settings,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
